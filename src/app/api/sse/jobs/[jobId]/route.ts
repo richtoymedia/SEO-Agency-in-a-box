@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/server/db";
+import { getDefaultTenant } from "@/server/auth";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -9,25 +9,15 @@ export async function GET(
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
-  const session = await auth();
-  if (!session?.userId || !session?.orgId) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  const tenant = await prisma.tenant.findUnique({
-    where: { clerkOrgId: session.orgId },
-  });
-  if (!tenant) {
-    return new Response("No tenant", { status: 403 });
-  }
+  const { tenantId } = await getDefaultTenant();
 
   // Check if it's a content job or optimization job
   const contentJob = await prisma.contentJob.findFirst({
-    where: { id: jobId, tenantId: tenant.id },
+    where: { id: jobId, tenantId },
   });
   const optimizationJob = !contentJob
     ? await prisma.optimizationJob.findFirst({
-        where: { id: jobId, tenantId: tenant.id },
+        where: { id: jobId, tenantId },
       })
     : null;
 
@@ -58,8 +48,8 @@ export async function GET(
         try {
           const job =
             jobType === "content"
-              ? await prisma.contentJob.findFirst({ where: { id: jobId, tenantId: tenant.id } })
-              : await prisma.optimizationJob.findFirst({ where: { id: jobId, tenantId: tenant.id } });
+              ? await prisma.contentJob.findFirst({ where: { id: jobId, tenantId } })
+              : await prisma.optimizationJob.findFirst({ where: { id: jobId, tenantId } });
 
           if (!job) {
             sendEvent({ type: "error", message: "Job not found" });

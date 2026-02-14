@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { BarChart3, FileText, Settings, Zap, LayoutDashboard } from "lucide-react";
 
@@ -46,18 +45,8 @@ export function Nav() {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
-          <OrganizationSwitcher
-            afterSelectOrganizationUrl="/dashboard"
-            afterCreateOrganizationUrl="/dashboard"
-            appearance={{
-              elements: {
-                rootBox: "flex items-center",
-                organizationSwitcherTrigger: "rounded-md border px-2 py-1 text-sm",
-              },
-            }}
-          />
-          <UserButton afterSignOutUrl="/" />
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">My Agency</span>
         </div>
       </div>
     </header>
