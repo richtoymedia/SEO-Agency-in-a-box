@@ -1,4 +1,10 @@
-import { Queue } from "bullmq";
+/**
+ * Queue abstraction with sync fallback.
+ * When REDIS_URL is not set, pipelines run inline (sync mode).
+ * This allows deploying to serverless platforms like Vercel without Redis.
+ */
+
+const hasRedis = !!process.env.REDIS_URL;
 
 function getConnection() {
   try {
@@ -13,27 +19,42 @@ function getConnection() {
   }
 }
 
-let _contentQueue: Queue | null = null;
-let _optimizationQueue: Queue | null = null;
-let _repurposeQueue: Queue | null = null;
+type SyncHandler = (data: Record<string, unknown>) => Promise<void>;
 
-export const contentQueue = {
-  add: async (...args: Parameters<Queue["add"]>) => {
-    if (!_contentQueue) _contentQueue = new Queue("content-pipeline", { connection: getConnection() });
-    return _contentQueue.add(...args);
-  },
-};
+function createQueueProxy(name: string, syncHandler: SyncHandler) {
+  let _queue: import("bullmq").Queue | null = null;
 
-export const optimizationQueue = {
-  add: async (...args: Parameters<Queue["add"]>) => {
-    if (!_optimizationQueue) _optimizationQueue = new Queue("optimization-pipeline", { connection: getConnection() });
-    return _optimizationQueue.add(...args);
-  },
-};
+  return {
+    add: async (_jobName: string, data: Record<string, unknown>) => {
+      if (!hasRedis) {
+        // Run synchronously in-process (fire-and-forget for the HTTP response)
+        syncHandler(data).catch((err) =>
+          console.error(`[sync-mode] ${name} error:`, err)
+        );
+        return { id: "sync-" + Date.now() };
+      }
 
-export const repurposeQueue = {
-  add: async (...args: Parameters<Queue["add"]>) => {
-    if (!_repurposeQueue) _repurposeQueue = new Queue("repurpose-pipeline", { connection: getConnection() });
-    return _repurposeQueue.add(...args);
-  },
-};
+      // Use BullMQ when Redis is available
+      if (!_queue) {
+        const { Queue } = await import("bullmq");
+        _queue = new Queue(name, { connection: getConnection() });
+      }
+      return _queue.add(_jobName, data);
+    },
+  };
+}
+
+export const contentQueue = createQueueProxy("content-pipeline", async (data) => {
+  const { runContentPipeline } = await import("@/server/services/content-pipeline");
+  await runContentPipeline(data.jobId as string, data.fromStep as string | undefined);
+});
+
+export const optimizationQueue = createQueueProxy("optimization-pipeline", async (data) => {
+  const { runOptimizationPipeline } = await import("@/server/services/optimization-pipeline");
+  await runOptimizationPipeline(data.jobId as string, data.fromStep as string | undefined);
+});
+
+export const repurposeQueue = createQueueProxy("repurpose-pipeline", async (data) => {
+  const { runRepurpose } = await import("@/server/services/content-pipeline");
+  await runRepurpose(data.jobId as string);
+});

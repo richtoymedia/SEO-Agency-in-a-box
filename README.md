@@ -1,127 +1,121 @@
 # SEO Agency In A Box
 
-Full-stack AI-powered SEO content creation and optimization platform built with Next.js, tRPC, Prisma, BullMQ, and Clerk authentication.
-
-## Stack
-
-- **Frontend:** Next.js (App Router), Tailwind CSS, shadcn/ui components
-- **API:** tRPC with Zod validation
-- **Database:** PostgreSQL via Prisma ORM
-- **Queue:** Redis + BullMQ (separate worker process)
-- **Auth:** Clerk (multi-tenant via Organizations)
-- **AI:** Claude (Anthropic), Gemini (Google), SerpAPI, Firecrawl, FAL
-- **Real-time:** SSE with polling fallback
-
-## Quick Start
-
-### 1. Start infrastructure
-
-```bash
-docker compose up -d
-```
-
-### 2. Configure environment
-
-```bash
-cp .env.example .env
-# Edit .env with your Clerk keys (required) and API keys (optional for mock mode)
-```
-
-### 3. Install dependencies and set up database
-
-```bash
-pnpm install
-pnpm db:generate
-pnpm db:migrate
-```
-
-### 4. Run the app
-
-```bash
-# Terminal 1: Web app
-pnpm dev
-
-# Terminal 2: Worker process
-pnpm worker
-```
-
-Open http://localhost:3000
-
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `REDIS_URL` | Yes | Redis connection string |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Clerk publishable key |
-| `CLERK_SECRET_KEY` | Yes | Clerk secret key |
-| `ANTHROPIC_API_KEY` | No | Claude API key (mock if empty) |
-| `GEMINI_API_KEY` | No | Gemini API key (mock if empty) |
-| `SERPAPI_API_KEY` | No | SerpAPI key (mock if empty) |
-| `FIRECRAWL_API_KEY` | No | Firecrawl key (mock if empty) |
-| `FAL_KEY` | No | FAL AI key (mock if empty) |
-
-**Mock mode:** If AI/API keys are not set, the system returns deterministic mock data that validates against all Zod schemas, allowing full end-to-end testing without API costs.
+Full-stack SEO content generation and optimization platform built with Next.js, tRPC, Prisma, and AI services.
 
 ## Features
 
-### Content Pipeline (7 steps)
-1. **Research** — Gemini tool loop with SERP + scraping
-2. **Image Specs** — Gemini structured output for image placements
-3. **Image Generation** — FAL AI image generation
-4. **Article Writing** — Claude long-form SEO article with internal links
-5. **Meta Tags** — Gemini structured output (title, description, slug)
-6. **Thumbnail** — Claude spec + FAL generation
-7. **Repurpose** — LinkedIn post + YouTube script via Claude
+- **Content Pipeline** (7 steps): Research, Image Specs, Image Generation, Article Writing, Meta Tags, Thumbnail, Repurpose (LinkedIn + YouTube)
+- **Optimization Pipeline** (5 steps): Scrape, Keyword Detection, Competitor Research, SEO Audit, Optimized Rewrite
+- **Multi-brand support** with per-brand voice/style, SEO settings, and internal linking
+- **Real-time progress** via SSE (Server-Sent Events)
+- **Mock mode** for testing without API keys — all AI services return deterministic fake data
 
-### Optimization Pipeline (5 steps)
-1. **Scrape** — Firecrawl URL scraping
-2. **Detect Keyword** — Gemini keyword analysis
-3. **Competitor Research** — Gemini tool loop with SERP
-4. **SEO Audit** — Claude audit report with scoring
-5. **Optimized Rewrite** — Claude rewrite implementing recommendations
+## Deploy to Vercel
 
-### Multi-tenant Architecture
-- Clerk Organizations map to tenants
-- All data scoped by `tenantId`
-- Auto-provisioning of tenant on first org access
-- Org switcher in navigation
+### 1. Push to GitHub
 
-### Real-time Progress
-- SSE streaming for live job updates
-- Automatic fallback to polling if SSE fails
-- Step-by-step timeline visualization
+```bash
+git remote add origin https://github.com/YOUR_USER/SEO-Agency-in-a-box.git
+git push -u origin main
+```
 
-## Scripts
+### 2. Create a Postgres database
 
-| Script | Description |
-|--------|-------------|
-| `pnpm dev` | Start Next.js dev server |
-| `pnpm worker` | Start BullMQ worker process |
-| `pnpm build` | Production build |
-| `pnpm db:generate` | Generate Prisma client |
-| `pnpm db:migrate` | Run database migrations |
-| `pnpm db:seed` | Seed database |
+Use one of these free providers:
+- [Neon](https://neon.tech) (recommended, generous free tier)
+- [Supabase](https://supabase.com)
+- [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
 
-## Demo Checklist
+Copy the connection string (it will look like `postgresql://user:pass@host/dbname?sslmode=require`).
 
-1. Sign in with Clerk
-2. Create or select an organization
-3. Create a brand (with sitemap URL)
-4. Sync sitemap
-5. Create content jobs (single + batch)
-6. Enqueue generate (or "Generate All Idle")
-7. Watch live progress on job detail page (SSE)
-8. Confirm article, images, meta, thumbnail, and repurpose outputs
-9. Create an optimization job with a source URL
-10. Run the optimization and view audit + rewrite outputs
+### 3. Deploy on Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new) and import your GitHub repo
+2. Set the **Environment Variable**:
+   - `DATABASE_URL` = your Postgres connection string
+3. Click **Deploy**
+
+Vercel will automatically run `prisma generate` (via postinstall) and `next build`.
+
+### 4. Initialize the database
+
+After the first deploy, run the Prisma migration against your database:
+
+```bash
+# From your local machine with DATABASE_URL set to your cloud Postgres
+npx prisma db push
+```
+
+Or use the Vercel CLI:
+```bash
+vercel env pull .env.local
+npx prisma db push
+```
+
+### 5. (Optional) Enable AI services
+
+Set these environment variables in Vercel to switch from mock mode to real AI:
+
+| Variable | Service |
+|---|---|
+| `ANTHROPIC_API_KEY` | Claude (article writing, audit, repurpose) |
+| `GEMINI_API_KEY` | Gemini (research, structured outputs) |
+| `SERPAPI_API_KEY` | SerpAPI (Google search) |
+| `FIRECRAWL_API_KEY` | Firecrawl (web scraping) |
+| `FAL_KEY` | FAL AI (image generation) |
+
+Without these keys, the app runs in **mock mode** with deterministic fake data — perfect for testing the UI and workflows.
+
+## Local Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start Postgres + Redis (optional, for queue mode)
+docker compose up -d
+
+# Push schema to database
+npx prisma db push
+
+# Start dev server
+pnpm dev
+```
+
+The app runs at `http://localhost:3000`.
+
+### With Redis (queue mode)
+
+If `REDIS_URL` is set, jobs run via BullMQ workers in a separate process:
+
+```bash
+# Terminal 1: Next.js dev server
+pnpm dev
+
+# Terminal 2: Queue worker
+pnpm worker
+```
+
+### Without Redis (sync mode)
+
+If `REDIS_URL` is not set, pipelines run inline in the API request handler. This is the default for Vercel deployments and local development without Docker.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **API**: tRPC v11
+- **Database**: PostgreSQL + Prisma 5
+- **Queue**: BullMQ + Redis (optional)
+- **AI**: Claude, Gemini, SerpAPI, Firecrawl, FAL
+- **UI**: Tailwind CSS + shadcn-style components
+- **Validation**: Zod v4
 
 ## Project Structure
 
 ```
 src/
 ├── app/                    # Next.js App Router
-│   ├── (app)/              # Authenticated routes
+│   ├── (app)/              # App routes
 │   │   ├── dashboard/      # Job listing + filters
 │   │   ├── jobs/           # Job create + detail
 │   │   ├── brands/         # Brand CRUD + settings
@@ -129,12 +123,9 @@ src/
 │   ├── api/
 │   │   ├── trpc/           # tRPC handler
 │   │   └── sse/            # SSE streaming endpoint
-│   ├── sign-in/            # Clerk sign-in
-│   ├── sign-up/            # Clerk sign-up
-│   └── org-required/       # Org selection prompt
 ├── components/             # React components
 │   ├── ui/                 # shadcn-style UI primitives
-│   ├── nav.tsx             # Navigation with org switcher
+│   ├── nav.tsx             # Navigation
 │   └── providers.tsx       # tRPC + React Query providers
 ├── lib/
 │   ├── schemas/            # Zod schemas (shared contracts)
@@ -142,12 +133,22 @@ src/
 │   ├── trpc.ts             # tRPC React client
 │   └── utils.ts            # Utilities (cn helper)
 └── server/
-    ├── auth/               # Clerk auth helpers
+    ├── auth/               # Auth helpers
     ├── db/                 # Prisma client singleton
-    ├── queue/              # BullMQ queues + worker
+    ├── queue/              # BullMQ queues + worker (with sync fallback)
     ├── services/           # AI/API wrappers + pipelines
     └── trpc/               # tRPC routers + context
 prisma/
 ├── schema.prisma           # Database schema
-└── seed.ts                 # Seed script
 ```
+
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `pnpm dev` | Start Next.js dev server |
+| `pnpm build` | Production build |
+| `pnpm worker` | Start BullMQ worker process (requires Redis) |
+| `pnpm db:generate` | Generate Prisma client |
+| `pnpm db:push` | Push schema to database |
+| `pnpm db:seed` | Seed database |
