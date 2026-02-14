@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 240 5.9% 10%;
+  --radius: 0.5rem;
+  --success: 142 76% 36%;
+  --warning: 38 92% 50%;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Utility classes for hsl vars */
+.bg-background { background-color: hsl(var(--background)); }
+.bg-foreground { background-color: hsl(var(--foreground)); }
+.bg-card { background-color: hsl(var(--card)); }
+.bg-primary { background-color: hsl(var(--primary)); }
+.bg-primary\/90 { background-color: hsl(var(--primary) / 0.9); }
+.bg-primary\/10 { background-color: hsl(var(--primary) / 0.1); }
+.bg-secondary { background-color: hsl(var(--secondary)); }
+.bg-secondary\/80 { background-color: hsl(var(--secondary) / 0.8); }
+.bg-destructive { background-color: hsl(var(--destructive)); }
+.bg-destructive\/90 { background-color: hsl(var(--destructive) / 0.9); }
+.bg-muted { background-color: hsl(var(--muted)); }
+.bg-accent { background-color: hsl(var(--accent)); }
+.text-foreground { color: hsl(var(--foreground)); }
+.text-primary { color: hsl(var(--primary)); }
+.text-primary-foreground { color: hsl(var(--primary-foreground)); }
+.text-secondary-foreground { color: hsl(var(--secondary-foreground)); }
+.text-destructive { color: hsl(var(--destructive)); }
+.text-destructive-foreground { color: hsl(var(--destructive-foreground)); }
+.text-muted-foreground { color: hsl(var(--muted-foreground)); }
+.text-accent-foreground { color: hsl(var(--accent-foreground)); }
+.text-card-foreground { color: hsl(var(--card-foreground)); }
+.border-input { border-color: hsl(var(--input)); }
+.ring-ring { --tw-ring-color: hsl(var(--ring)); }
+.ring-offset-background { --tw-ring-offset-color: hsl(var(--background)); }
+
+/* shadcn animation */
+@keyframes slideInFromBottom {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-in { animation: slideInFromBottom 0.3s ease-out; }
+.slide-in-from-bottom-5 { /* handled by animate-in */ }
+
+/* Prose for markdown */
+.prose {
+  max-width: 65ch;
+  line-height: 1.75;
+}
+.prose h1 { font-size: 2em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+.prose h2 { font-size: 1.5em; font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; }
+.prose h3 { font-size: 1.25em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; }
+.prose p { margin-top: 0.75em; margin-bottom: 0.75em; }
+.prose ul, .prose ol { margin-top: 0.75em; margin-bottom: 0.75em; padding-left: 1.5em; }
+.prose li { margin-top: 0.25em; margin-bottom: 0.25em; }
+.prose ul { list-style-type: disc; }
+.prose ol { list-style-type: decimal; }
+.prose a { color: hsl(var(--primary)); text-decoration: underline; }
+.prose code { background: hsl(var(--muted)); padding: 0.2em 0.4em; border-radius: 0.25em; font-size: 0.875em; }
+.prose pre { background: hsl(var(--muted)); padding: 1em; border-radius: 0.5em; overflow-x: auto; margin: 1em 0; }
+.prose img { max-width: 100%; border-radius: 0.5em; margin: 1em 0; }
+.prose blockquote { border-left: 3px solid hsl(var(--border)); padding-left: 1em; font-style: italic; color: hsl(var(--muted-foreground)); }

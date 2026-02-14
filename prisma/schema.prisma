@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id         String   @id @default(uuid())
+  clerkOrgId String   @unique
+  name       String
+  createdAt  DateTime @default(now())
+
+  brands            Brand[]
+  contentJobs       ContentJob[]
+  sitemapPages      SitemapPage[]
+  optimizationJobs  OptimizationJob[]
+}
+
+model Brand {
+  id                String   @id @default(uuid())
+  tenantId          String
+  companyName       String
+  siteUrl           String
+  voiceStyleJson    Json     @default("{}")
+  seoSettingsJson   Json     @default("{}")
+  imageDefaultsJson Json     @default("{}")
+  internalLinkingJson Json   @default("{}")
+  sitemapUrl        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  contentJobs  ContentJob[]
+  sitemapPages SitemapPage[]
+  optimizationJobs OptimizationJob[]
+
+  @@index([tenantId])
+}
+
+enum JobStatus {
+  IDLE
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum StepStatus {
+  idle
+  running
+  succeeded
+  failed
+}
+
+model ContentJob {
+  id        String    @id @default(uuid())
+  tenantId  String
+  brandId   String
+  topic     String
+  keywords  String[]
+  status    JobStatus @default(IDLE)
+
+  // Step states
+  researchStatus      StepStatus @default(idle)
+  researchStartedAt   DateTime?
+  researchCompletedAt DateTime?
+  researchError       String?
+
+  imageSpecsStatus      StepStatus @default(idle)
+  imageSpecsStartedAt   DateTime?
+  imageSpecsCompletedAt DateTime?
+  imageSpecsError       String?
+
+  imagesStatus      StepStatus @default(idle)
+  imagesStartedAt   DateTime?
+  imagesCompletedAt DateTime?
+  imagesError       String?
+
+  articleStatus      StepStatus @default(idle)
+  articleStartedAt   DateTime?
+  articleCompletedAt DateTime?
+  articleError       String?
+
+  metaStatus      StepStatus @default(idle)
+  metaStartedAt   DateTime?
+  metaCompletedAt DateTime?
+  metaError       String?
+
+  thumbnailStatus      StepStatus @default(idle)
+  thumbnailStartedAt   DateTime?
+  thumbnailCompletedAt DateTime?
+  thumbnailError       String?
+
+  repurposeStatus      StepStatus @default(idle)
+  repurposeStartedAt   DateTime?
+  repurposeCompletedAt DateTime?
+  repurposeError       String?
+
+  // Persisted outputs
+  researchBriefJson Json?
+  imageSpecsJson    Json?
+  imageUrlsJson     Json?
+  articleMarkdown   String?
+  metaJson          Json?
+  thumbnailSpecJson Json?
+  thumbnailUrl      String?
+  repurposeJson     Json?
+
+  failedStep  String?
+  lastError   String?
+  retryCount  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  brand  Brand  @relation(fields: [brandId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, brandId])
+  @@index([tenantId, status])
+}
+
+model SitemapPage {
+  id         String    @id @default(uuid())
+  tenantId   String
+  brandId    String
+  url        String
+  title      String?
+  lastSeenAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  brand  Brand  @relation(fields: [brandId], references: [id])
+
+  @@unique([tenantId, brandId, url])
+  @@index([tenantId])
+  @@index([tenantId, brandId])
+}
+
+model OptimizationJob {
+  id        String    @id @default(uuid())
+  tenantId  String
+  brandId   String
+  sourceUrl String
+  status    JobStatus @default(IDLE)
+
+  // Step states
+  scrapeStatus      StepStatus @default(idle)
+  scrapeStartedAt   DateTime?
+  scrapeCompletedAt DateTime?
+  scrapeError       String?
+
+  detectKeywordStatus      StepStatus @default(idle)
+  detectKeywordStartedAt   DateTime?
+  detectKeywordCompletedAt DateTime?
+  detectKeywordError       String?
+
+  competitorResearchStatus      StepStatus @default(idle)
+  competitorResearchStartedAt   DateTime?
+  competitorResearchCompletedAt DateTime?
+  competitorResearchError       String?
+
+  auditStatus      StepStatus @default(idle)
+  auditStartedAt   DateTime?
+  auditCompletedAt DateTime?
+  auditError       String?
+
+  rewriteStatus      StepStatus @default(idle)
+  rewriteStartedAt   DateTime?
+  rewriteCompletedAt DateTime?
+  rewriteError       String?
+
+  // Outputs
+  scrapedMarkdown        String?
+  detectedKeyword        String?
+  competitorBriefJson    Json?
+  auditMarkdown          String?
+  optimizedRewriteMarkdown String?
+
+  failedStep  String?
+  lastError   String?
+  retryCount  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  brand  Brand  @relation(fields: [brandId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, brandId])
+  @@index([tenantId, status])
+}

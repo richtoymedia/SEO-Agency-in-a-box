@@ -1,0 +1,51 @@
+{
+  "name": "seo-agency",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "worker": "tsx src/server/queue/worker.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.37.4",
+    "@prisma/client": "5.22.0",
+    "@tanstack/react-query": "^5.90.21",
+    "@trpc/client": "^11.10.0",
+    "@trpc/next": "^11.10.0",
+    "@trpc/react-query": "^11.10.0",
+    "@trpc/server": "^11.10.0",
+    "bullmq": "^5.69.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "ioredis": "^5.9.3",
+    "lucide-react": "^0.564.0",
+    "next": "16.1.6",
+    "prisma": "5.22.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "superjson": "^2.2.6",
+    "tailwind-merge": "^3.4.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}
