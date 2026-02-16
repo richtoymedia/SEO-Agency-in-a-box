@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+.vercel
+*.md
+docker-compose*.yml
+.DS_Store
